@@ -8,22 +8,27 @@ const app = express();
 app.use(log);
 
 
-app.get('/departments/:dept/courses',queryValidation,auth,(req,res) => {
-    const {dept} = req.params;
-    const {level,minCredits,maxCredits,semester,instructor} = req.query;
-    
+app.get('/departments/:dept/courses', queryValidation, auth, (req, res) => {
+    const { dept } = req.params;
+    let { level, minCredits, maxCredits, semester, instructor } = req.query;
+
+    // Normalize query inputs
+    semester = semester?.trim().toLowerCase();
+    instructor = instructor?.trim().toLowerCase();
+
     const filteredCourses = course.filter(course => {
         return (
             course.department === dept &&
             (!level || course.level === level) &&
             (!minCredits || course.credits >= parseInt(minCredits)) &&
             (!maxCredits || course.credits <= parseInt(maxCredits)) &&
-            (!semester || course.semester === semester) &&
-            (!instructor || course.instructor === instructor)
+            (!semester || course.semester.toLowerCase().includes(semester)) &&
+            (!instructor || course.instructor.toLowerCase().includes(instructor))
         );
     });
     res.send(filteredCourses);
 });
+
 
 app.get('/', (req,res) => {
     res.send(`
